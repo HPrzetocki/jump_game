@@ -122,20 +122,8 @@ public class PlayerCon : MonoBehaviour
             crouchingCollider.enabled = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            Shoot();
-        }
     }
 
-    void Shoot()
-    {
-        float direction = transform.eulerAngles.y == 0 ? 1 : -1;
-        Vector3 bulletPosition = firePoint.position + new Vector3(bulletOffset * direction, 0, 0);
-        GameObject bullet = Instantiate(bulletPrefab, bulletPosition, firePoint.rotation);
-        Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
-        bulletRb.linearVelocity = new Vector2(bulletSpeed * direction, 0);
-    }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
