@@ -54,10 +54,15 @@ public class PlayerCon : MonoBehaviour
         {
             rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
         }
+        Debug.Log("FixedUpdate Velocity: " + rb.linearVelocity);
+
     }
 
     private void Update()
     {
+        moveInput = Input.GetAxisRaw("Horizontal");
+        Debug.Log("Move Input: " + moveInput);
+
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, GroundKind);
 
         if (isGrounded && rb.linearVelocity.y <= 0)
@@ -96,7 +101,10 @@ public class PlayerCon : MonoBehaviour
 
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpDirection = moveInput;
+            Debug.Log("Jump Released - Charged: " + jumpChargeCounter + ", Direction: " + jumpDirection);
+
             if (!isGrounded) canDoubleJump = false;
+
         }
 
         if (moveInput > 0)
@@ -127,6 +135,16 @@ public class PlayerCon : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (WallKind == (WallKind | (1 << collision.gameObject.layer)))
+        {
+            Debug.Log("Wall collision with layer: " + collision.gameObject.layer + " (" + LayerMask.LayerToName(collision.gameObject.layer) + ")");
+            isWalled = true;
+            moveInput = -moveInput; // Zmiana kierunku ruchu
+            rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y); // Dodanie impulsu
+        }
+
+
+
         if (WallKind == (WallKind | (1 << collision.gameObject.layer)))
         {
             isWalled = true;
