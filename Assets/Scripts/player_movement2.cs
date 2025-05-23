@@ -26,6 +26,9 @@ public class PlayerController2 : MonoBehaviour
     public float crouchScaleY = 0.8f;
     private Vector3 originalScale;
 
+    public float horizontalJumpBoost = 1.5f;
+    public float verticalJumpScale = 0.6f;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -46,33 +49,31 @@ public class PlayerController2 : MonoBehaviour
     {
         if (isCrouching)
         {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y); // zablokuj ruch przy kucaniu
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
             return;
         }
 
+        // Ruch tylko gdy gracz jest na ziemi i nie skacze
         if (grounded && jumpForce == 0.0f)
         {
             rb.linearVelocity = new Vector2(speed * gI.valueX, rb.linearVelocity.y);
         }
     }
 
+
     private void Flip()
     {
         if (gI.valueX > 0)
         {
-            transform.rotation = Quaternion.Euler(0f, 0f, 0f); // patrz w prawo
+            transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             direction = 1;
         }
         else if (gI.valueX < 0)
         {
-            transform.rotation = Quaternion.Euler(0f, 180f, 0f); // patrz w lewo
+            transform.rotation = Quaternion.Euler(0f, 180f, 0f);
             direction = -1;
         }
     }
-
-
-
-
 
     private void PlayerJump()
     {
@@ -80,16 +81,16 @@ public class PlayerController2 : MonoBehaviour
         {
             if (grounded)
             {
-                jumpForce += 0.8f;
+                jumpForce += 2f; // Ładowanie skoku szybciej
                 preJump = true;
                 rb.sharedMaterial = bounceMat;
             }
 
-            // double jump logic
+            // double jump
             if (!grounded && jumpForce == 0.0f && jumpCount < maxJumps)
             {
-                rb.linearVelocity = new Vector2(gI.valueX * speed, 0); // reset pionowego ruchu
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 25f); // możesz ustawić siłę 2. skoku oddzielnie
+                float tempX = gI.valueX * speed * horizontalJumpBoost;
+                rb.linearVelocity = new Vector2(tempX, 20f); // Mniej do góry, więcej w bok
                 jumpCount++;
             }
         }
@@ -98,10 +99,10 @@ public class PlayerController2 : MonoBehaviour
             preJump = false;
         }
 
-        if ((gI.jumpInput && grounded && jumpForce >= 40.0f) || (!gI.jumpInput && jumpForce >= 0.1f))
+        if ((gI.jumpInput && grounded && jumpForce >= 90.0f) || (!gI.jumpInput && jumpForce >= 0.1f))
         {
-            float tempX = gI.valueX * speed;
-            float tempY = jumpForce;
+            float tempX = gI.valueX * speed * horizontalJumpBoost;
+            float tempY = jumpForce * verticalJumpScale; // Skok bardziej w bok niż w górę
             rb.linearVelocity = new Vector2(tempX, tempY);
             jumpCount++;
             Invoke("ResetJump", 0.025f);
@@ -127,13 +128,12 @@ public class PlayerController2 : MonoBehaviour
 
         if (grounded)
         {
-            jumpCount = 0; // reset double jump przy lądowaniu
+            jumpCount = 0;
         }
     }
 
     private void HandleCrouch()
     {
-        // Załóżmy, że kucanie to klawisz "S" lub "DownArrow"
         if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
         {
             isCrouching = true;

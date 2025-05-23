@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 
 public class JumpKingMovement : MonoBehaviour
 {
@@ -67,4 +67,4 @@ public class JumpKingMovement : MonoBehaviour
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
     }
 }
-
+*/
