@@ -29,6 +29,8 @@ public class PlayerController2 : MonoBehaviour
     public float horizontalJumpBoost = 1.5f;
     public float verticalJumpScale = 0.6f;
 
+    private float maxJumpForce = 90f;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -49,17 +51,23 @@ public class PlayerController2 : MonoBehaviour
     {
         if (isCrouching)
         {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            rb.velocity = new Vector2(0, rb.velocity.y);
             return;
         }
 
-        // Ruch tylko gdy gracz jest na ziemi i nie skacze
-        if (grounded && jumpForce == 0.0f)
+        if (grounded)
         {
-            rb.linearVelocity = new Vector2(speed * gI.valueX, rb.linearVelocity.y);
+            if (preJump)
+            {
+                // Zatrzymaj ruch poziomy podczas ładowania skoku
+                rb.velocity = new Vector2(0, rb.velocity.y);
+            }
+            else
+            {
+                rb.velocity = new Vector2(speed * gI.valueX, rb.velocity.y);
+            }
         }
     }
-
 
     private void Flip()
     {
@@ -77,41 +85,56 @@ public class PlayerController2 : MonoBehaviour
 
     private void PlayerJump()
     {
-        if (gI.jumpInput && (grounded || jumpCount < maxJumps))
+        if (gI.jumpInput && grounded)
         {
-            if (grounded)
-            {
-                jumpForce += 2f; // Ładowanie skoku szybciej
-                preJump = true;
-                rb.sharedMaterial = bounceMat;
-            }
+            preJump = true;
+            rb.sharedMaterial = bounceMat;
 
-            // double jump
-            if (!grounded && jumpForce == 0.0f && jumpCount < maxJumps)
+            jumpForce += 2.5f;
+            if (jumpForce >= maxJumpForce)
             {
-                float tempX = gI.valueX * speed * horizontalJumpBoost;
-                rb.linearVelocity = new Vector2(tempX, 20f); // Mniej do góry, więcej w bok
-                jumpCount++;
+                jumpForce = maxJumpForce;
+                PerformJump();
             }
         }
-        else
+
+        if (!gI.jumpInput && preJump && grounded && jumpForce > 0f)
         {
-            preJump = false;
+            PerformJump();
         }
 
-        if ((gI.jumpInput && grounded && jumpForce >= 90.0f) || (!gI.jumpInput && jumpForce >= 0.1f))
+        if (gI.jumpInput && !grounded && jumpCount < maxJumps && jumpForce == 0.0f)
         {
             float tempX = gI.valueX * speed * horizontalJumpBoost;
-            float tempY = jumpForce * verticalJumpScale; // Skok bardziej w bok niż w górę
-            rb.linearVelocity = new Vector2(tempX, tempY);
+            rb.velocity = new Vector2(tempX, 20f);
             jumpCount++;
-            Invoke("ResetJump", 0.025f);
         }
 
-        if (rb.linearVelocity.y <= -1)
+        if (rb.velocity.y <= -1)
         {
             rb.sharedMaterial = normalMat;
         }
+    }
+
+    private void PerformJump()
+    {
+        float horizontalInput = gI.valueX;
+
+        if (Mathf.Abs(horizontalInput) < 0.1f)
+        {
+            horizontalInput = direction;
+        }
+
+        float tempX = horizontalInput * speed * horizontalJumpBoost;
+        float tempY = jumpForce * verticalJumpScale;
+
+        rb.velocity = new Vector2(tempX, tempY);
+
+        jumpCount++;
+        ResetJump();
+        preJump = false;
+
+        rb.sharedMaterial = normalMat;
     }
 
     private void ResetJump()
@@ -144,5 +167,12 @@ public class PlayerController2 : MonoBehaviour
             isCrouching = false;
             transform.localScale = originalScale;
         }
+    }
+
+    public void ResetPlayerState()
+    {
+        jumpForce = 0f;
+        preJump = false;
+        jumpCount = 0;
     }
 }
