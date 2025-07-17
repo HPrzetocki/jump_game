@@ -43,7 +43,7 @@ public class BossMovement : MonoBehaviour
     {
         if (rb == null || isFrozen) return;
 
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
         rb.AddForce(directionAway * knockbackForce, ForceMode2D.Impulse);
 
         StartCoroutine(FreezeAndJump());
@@ -56,7 +56,7 @@ public class BossMovement : MonoBehaviour
 
         yield return new WaitForSeconds(freezeDuration);
 
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
         rb.bodyType = RigidbodyType2D.Static;
 
         // 🚀 Strzał tylko w tym momencie

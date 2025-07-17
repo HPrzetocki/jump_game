@@ -4,7 +4,7 @@ using UnityEngine;
 public class BossWeapon : MonoBehaviour
 {
     public int attackDamage = 20;
-    public int enragedAttackDamage = 40;
+    public int enragedAttackDamage = 20;
 
     public Vector3 attackOffset;
     public float attackRange = 1f;
@@ -14,7 +14,11 @@ public class BossWeapon : MonoBehaviour
     public float projectileSpeed = 25f;
 
     public int burstCount = 5;              // liczba pocisków w serii
-    public float burstInterval = 0.1f;      // odstęp między pociskami
+    public float burstInterval = 0.1f;      // odstęp między pociskamipublic float rangedAttackCooldown = 3f;  // czas pomiędzy seriami
+    public float rangedAttackCooldown = 3f;  // czas pomiędzy seriami
+    public float rangedAttackRange = 15f;    // zasięg strzału
+
+    private float nextAttackTime = 0f;
 
     private Transform player;
 
@@ -35,18 +39,28 @@ public class BossWeapon : MonoBehaviour
         {
             if (player == null) yield break;
 
-            Vector3 direction = (player.position - transform.position).normalized;
+            // Rzutowanie pozycji na Vector2 (ignoruje Z)
+            Vector2 enemyPos = new Vector2(transform.position.x, transform.position.y);
+            Vector2 playerPos = new Vector2(player.position.x, player.position.y);
+            Vector2 direction = (playerPos - enemyPos).normalized;
 
             GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
             Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
+
             if (projRb != null)
             {
-                projRb.velocity = direction * projectileSpeed;
+                projRb.linearVelocity = direction * projectileSpeed;
+            }
+            else
+            {
+                Debug.LogWarning("Brak Rigidbody2D na pocisku!");
             }
 
             yield return new WaitForSeconds(burstInterval);
         }
     }
+
+
 
     public void Attack()
     {
@@ -73,4 +87,19 @@ public class BossWeapon : MonoBehaviour
         Vector3 pos = transform.position + transform.right * attackOffset.x + transform.up * attackOffset.y;
         Gizmos.DrawWireSphere(pos, attackRange);
     }
+
+    void Update()
+    {
+        if (player == null) return;
+
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        // Jeśli gracz jest w zasięgu i czas pozwala
+        if (distanceToPlayer <= rangedAttackRange && Time.time >= nextAttackTime)
+        {
+            RangedAttack();
+            nextAttackTime = Time.time + rangedAttackCooldown;
+        }
+    }
+
 }
