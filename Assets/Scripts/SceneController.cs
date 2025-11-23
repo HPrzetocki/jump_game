@@ -21,7 +21,7 @@ public class SceneController : MonoBehaviour
 
     }
 
-    public void NextLEvel()
+    public void NextLevel()
     {
         StartCoroutine(LoadLevel());
     }
