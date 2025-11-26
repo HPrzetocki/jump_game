@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController2 : MonoBehaviour
+
+   
 {
+    [SerializeField] private PlayerMovmentState playerMovmentState;
+    [SerializeField] private Animator animator;
     public float speed;
     public float jumpForce;
 
@@ -31,6 +35,7 @@ public class PlayerController2 : MonoBehaviour
 
     private float maxJumpForce = 90f;
 
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -45,14 +50,28 @@ public class PlayerController2 : MonoBehaviour
         CheckStatus();
         PlayerMove();
         HandleCrouch();
+        /* HandleAnimations();}*/
+
     }
 
+    /* private void HandleAnimations()
+    {
+        if (Mathf.Abs(gI.valueX) > 0.1f && grounded && !isCrouching)
+        {
+            animator.SetBool("isWalking", true);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
+        }
+    }*/
     private void PlayerMove()
     {
         if (isCrouching)
         {
             rb.velocity = new Vector2(0, rb.velocity.y);
             return;
+           
         }
 
         if (grounded)
@@ -61,12 +80,16 @@ public class PlayerController2 : MonoBehaviour
             {
                 // Zatrzymaj ruch poziomy podczas ładowania skoku
                 rb.velocity = new Vector2(0, rb.velocity.y);
+                playerMovmentState.SetMoveState(PlayerMovmentState.MoveState.Crouch);
             }
             else
             {
                 rb.velocity = new Vector2(speed * gI.valueX, rb.velocity.y);
             }
+
         }
+
+        
     }
 
     private void Flip()
@@ -114,6 +137,7 @@ public class PlayerController2 : MonoBehaviour
         {
             rb.sharedMaterial = normalMat;
         }
+       
     }
 
     private void PerformJump()
@@ -123,6 +147,7 @@ public class PlayerController2 : MonoBehaviour
         if (Mathf.Abs(horizontalInput) < 0.1f)
         {
             horizontalInput = direction;
+
         }
 
         float tempX = horizontalInput * speed * horizontalJumpBoost;
@@ -135,6 +160,7 @@ public class PlayerController2 : MonoBehaviour
         preJump = false;
 
         rb.sharedMaterial = normalMat;
+        playerMovmentState.SetMoveState(PlayerMovmentState.MoveState.Jump);
     }
 
     private void ResetJump()
@@ -153,6 +179,7 @@ public class PlayerController2 : MonoBehaviour
         {
             jumpCount = 0;
         }
+
     }
 
     private void HandleCrouch()
@@ -167,6 +194,7 @@ public class PlayerController2 : MonoBehaviour
             isCrouching = false;
             transform.localScale = originalScale;
         }
+       
     }
 
     public void ResetPlayerState()
