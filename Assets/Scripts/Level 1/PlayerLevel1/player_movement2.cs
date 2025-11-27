@@ -31,6 +31,8 @@ public class PlayerController2 : MonoBehaviour
 
     private float maxJumpForce = 90f;
 
+    [SerializeField] private AudioClip jumpSound;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -95,12 +97,14 @@ public class PlayerController2 : MonoBehaviour
             {
                 jumpForce = maxJumpForce;
                 PerformJump();
+                        SoundFXManager.instance.PlaySoundFXClip(jumpSound, transform, 1f);
             }
         }
 
         if (!gI.jumpInput && preJump && grounded && jumpForce > 0f)
         {
             PerformJump();
+            SoundFXManager.instance.PlaySoundFXClip(jumpSound, transform, 1f);
         }
 
         if (gI.jumpInput && !grounded && jumpCount < maxJumps && jumpForce == 0.0f)
@@ -129,6 +133,7 @@ public class PlayerController2 : MonoBehaviour
         float tempY = jumpForce * verticalJumpScale;
 
         rb.velocity = new Vector2(tempX, tempY);
+
 
         jumpCount++;
         ResetJump();

@@ -5,13 +5,14 @@ using UnityEngine.SceneManagement;
 
 public class PlayerHealth : MonoBehaviour
 {
-
+    [SerializeField] private AudioClip damageSound;
 	public int health = 100;
 
 	public GameObject deathEffect;
 
 	public void TakeDamage(int damage)
 	{
+		SoundFXManager.instance.PlaySoundFXClip(damageSound, transform, 1f);
 		health -= damage;
 
 		StartCoroutine(DamageAnimation());

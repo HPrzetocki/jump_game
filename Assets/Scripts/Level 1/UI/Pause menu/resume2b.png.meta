@@ -297,7 +297,14 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      resume2b_0: -2929929930337092199
+      resume2b_1: 6843853324723835541
+      resume2b_2: -7350869260277948069
+      resume2b_3: 7987736880411435670
+      resume2b_4: -9034949264129459239
+      resume2b_5: 520081531694512197
+      resume2b_6: 2093509075907920601
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
