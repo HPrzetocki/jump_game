@@ -2,12 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController2 : MonoBehaviour
+// Analityka
+using Unity.Services.Analytics;
+using Unity.Services.Core;
 
-   
+
+public class PlayerController2 : MonoBehaviour
 {
     [SerializeField] private PlayerMovmentState playerMovmentState;
     [SerializeField] private Animator animator;
+    [SerializeField] private AudioClip jumpSound;
     public float speed;
     public float jumpForce;
 
@@ -35,12 +39,22 @@ public class PlayerController2 : MonoBehaviour
 
     private float maxJumpForce = 90f;
 
+    // Do analityki / debugów
+    private bool lastCrouchInput = false;
+    private bool wasGrounded = false;
+    private bool firstStatusCheckDone = false;
+
+    // Helper: czy Unity Services są zainicjalizowane
+    private bool IsAnalyticsReady =>
+        UnityServices.State == ServicesInitializationState.Initialized;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         gI = GetComponent<GatherInput>();
         originalScale = transform.localScale;
+
+        Debug.Log("[Player] PlayerController2 Start");
     }
 
     private void FixedUpdate()
@@ -50,11 +64,11 @@ public class PlayerController2 : MonoBehaviour
         CheckStatus();
         PlayerMove();
         HandleCrouch();
-        /* HandleAnimations();}*/
-
+        /* HandleAnimations(); */
     }
 
-    /* private void HandleAnimations()
+    /*
+    private void HandleAnimations()
     {
         if (Mathf.Abs(gI.valueX) > 0.1f && grounded && !isCrouching)
         {
@@ -64,14 +78,15 @@ public class PlayerController2 : MonoBehaviour
         {
             animator.SetBool("isWalking", false);
         }
-    }*/
+    }
+    */
+
     private void PlayerMove()
     {
         if (isCrouching)
         {
             rb.velocity = new Vector2(0, rb.velocity.y);
             return;
-           
         }
 
         if (grounded)
@@ -86,10 +101,7 @@ public class PlayerController2 : MonoBehaviour
             {
                 rb.velocity = new Vector2(speed * gI.valueX, rb.velocity.y);
             }
-
         }
-
-        
     }
 
     private void Flip()
@@ -108,8 +120,14 @@ public class PlayerController2 : MonoBehaviour
 
     private void PlayerJump()
     {
+        // Ładowany skok z ziemi
         if (gI.jumpInput && grounded)
         {
+            if (!preJump)
+            {
+                Debug.Log("[Player] Zaczynam ładować skok z ziemi");
+            }
+
             preJump = true;
             rb.sharedMaterial = bounceMat;
 
@@ -117,37 +135,34 @@ public class PlayerController2 : MonoBehaviour
             if (jumpForce >= maxJumpForce)
             {
                 jumpForce = maxJumpForce;
-                PerformJump();
+                Debug.Log("[Player] Osiągnięto maxJumpForce, wykonuję skok z ziemi");
+                PerformJump(false); // skok z ziemi
             }
         }
 
+        // Zakończenie ładowania i wykonanie skoku
         if (!gI.jumpInput && preJump && grounded && jumpForce > 0f)
         {
-            PerformJump();
+            Debug.Log("[Player] Zwolniono przycisk skoku, wykonuję skok z ziemi");
+            PerformJump(false); // skok z ziemi
         }
 
-        if (gI.jumpInput && !grounded && jumpCount < maxJumps && jumpForce == 0.0f)
-        {
-            float tempX = gI.valueX * speed * horizontalJumpBoost;
-            rb.velocity = new Vector2(tempX, 20f);
-            jumpCount++;
-        }
+        // Podwójny skok w powietrzu
+
 
         if (rb.velocity.y <= -1)
         {
             rb.sharedMaterial = normalMat;
         }
-       
     }
 
-    private void PerformJump()
+    private void PerformJump(bool isAirJump)
     {
         float horizontalInput = gI.valueX;
 
         if (Mathf.Abs(horizontalInput) < 0.1f)
         {
             horizontalInput = direction;
-
         }
 
         float tempX = horizontalInput * speed * horizontalJumpBoost;
@@ -156,11 +171,17 @@ public class PlayerController2 : MonoBehaviour
         rb.velocity = new Vector2(tempX, tempY);
 
         jumpCount++;
-        ResetJump();
         preJump = false;
-
         rb.sharedMaterial = normalMat;
         playerMovmentState.SetMoveState(PlayerMovmentState.MoveState.Jump);
+
+        Debug.Log($"[Player] Skok z ziemi: vel=({tempX}, {tempY}), jumpCount={jumpCount}");
+        SoundFXManager.instance.PlaySoundFXClip(jumpSound, transform, 1f);
+
+        // Analityka – skok z ziemi
+        SendJumpAnalytics(isAirJump, tempX, tempY);
+
+        ResetJump();
     }
 
     private void ResetJump()
@@ -175,16 +196,44 @@ public class PlayerController2 : MonoBehaviour
 
         grounded = leftCheckHit.collider != null || rightCheckHit.collider != null;
 
+        // Pierwsze wywołanie – inicjalizacja, bez eventu lądowania
+        if (!firstStatusCheckDone)
+        {
+            wasGrounded = grounded;
+            firstStatusCheckDone = true;
+        }
+        else
+        {
+            // Lądowanie – event tylko przy przejściu z powietrza na ziemię
+            if (grounded && !wasGrounded)
+            {
+                Debug.Log("[Player] Lądowanie na ziemi");
+                SendLandAnalytics();
+                jumpCount = 0;
+            }
+        }
+
         if (grounded)
         {
             jumpCount = 0;
         }
 
+        wasGrounded = grounded;
     }
 
     private void HandleCrouch()
     {
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+        bool crouchInput = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
+
+        // Zmiana stanu kucania – tylko raz przy zmianie
+        if (crouchInput != lastCrouchInput)
+        {
+            Debug.Log("[Player] Zmiana stanu kucania: " + crouchInput);
+            SendCrouchAnalytics(crouchInput);
+            lastCrouchInput = crouchInput;
+        }
+
+        if (crouchInput)
         {
             isCrouching = true;
             transform.localScale = new Vector3(originalScale.x, crouchScaleY, originalScale.z);
@@ -194,13 +243,111 @@ public class PlayerController2 : MonoBehaviour
             isCrouching = false;
             transform.localScale = originalScale;
         }
-       
     }
 
     public void ResetPlayerState()
     {
+        Debug.Log("[Player] ResetPlayerState");
         jumpForce = 0f;
         preJump = false;
         jumpCount = 0;
+    }
+
+    // ==========================
+    // ===== METODY ANALITYKI ===
+    // ==========================
+
+    private void SendJumpAnalytics(bool isAirJump, float velX, float velY)
+    {
+        if (!IsAnalyticsReady)
+        {
+            Debug.LogWarning($"[Analytics] Jump event SKIPPED - services not ready. isAirJump={isAirJump}");
+            return;
+        }
+
+        try
+        {
+            var jumpEvent = new CustomEvent("player_jump")
+            {
+                { "is_air_jump", isAirJump },
+                { "velocity_x", velX },
+                { "velocity_y", velY },
+                { "position_x", transform.position.x },
+                { "position_y", transform.position.y },
+                { "jump_count", jumpCount },
+                { "grounded_before_jump", grounded }
+            };
+
+            AnalyticsService.Instance.RecordEvent(jumpEvent);
+
+            Debug.Log(
+                $"[Analytics] Sent player_jump | air={isAirJump}, vel=({velX}, {velY}), " +
+                $"pos=({transform.position.x}, {transform.position.y}), jumpCount={jumpCount}"
+            );
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("[Analytics] Failed to send player_jump: " + e);
+        }
+    }
+
+    private void SendCrouchAnalytics(bool started)
+    {
+        if (!IsAnalyticsReady)
+        {
+            Debug.LogWarning($"[Analytics] Crouch event SKIPPED - services not ready. started={started}");
+            return;
+        }
+
+        try
+        {
+            var crouchEvent = new CustomEvent("player_crouch")
+            {
+                { "started", started },
+                { "position_x", transform.position.x },
+                { "position_y", transform.position.y }
+            };
+
+            AnalyticsService.Instance.RecordEvent(crouchEvent);
+
+            Debug.Log(
+                $"[Analytics] Sent player_crouch | started={started}, " +
+                $"pos=({transform.position.x}, {transform.position.y})"
+            );
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("[Analytics] Failed to send player_crouch: " + e);
+        }
+    }
+
+    private void SendLandAnalytics()
+    {
+        if (!IsAnalyticsReady)
+        {
+            Debug.LogWarning("[Analytics] Land event SKIPPED - services not ready.");
+            return;
+        }
+
+        try
+        {
+            var landEvent = new CustomEvent("player_land")
+            {
+                { "position_x", transform.position.x },
+                { "position_y", transform.position.y },
+                { "landing_velocity_y", rb.velocity.y }
+            };
+
+            AnalyticsService.Instance.RecordEvent(landEvent);
+
+            Debug.Log(
+                $"[Analytics] Sent player_land | pos=({transform.position.x}, {transform.position.y}), " +
+                $"velY={rb.velocity.y}"
+            );
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("[Analytics] Failed to send player_land: " + e);
+        }
     }
 }

@@ -141,7 +141,8 @@ PlayerSettings:
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
   bundleVersion: 1.0
-  preloadedAssets: []
+  preloadedAssets:
+  - {fileID: -944628639613478452, guid: 3590b91b4603b465dbb4216d601bff33, type: 3}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -708,11 +709,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 896386bf-6fde-4c6a-8871-3a586e6fddaa
+  cloudProjectId: 44b54b3e-9b68-4596-afe5-26c67e1e1045
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: jump_game 2025-03-12_20-19-17
-  organizationId: dropsonixp
+  projectName: jump_game
+  organizationId: dziok
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

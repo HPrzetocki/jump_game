@@ -11,7 +11,7 @@ public class ItemSpawnDirector2D : MonoBehaviour
     public List<Transform> spawnPoints = new();   // w Inspectorze dodaj punkty
 
     [Header("Zachowanie")]
-    public Vector2 respawnEveryRange = new Vector2(8f, 12f); // losowo co 8–12 s
+    public Vector2 respawnEveryRange = new Vector2(15f, 20f); // losowo co 8–12 s
     public bool avoidRepeats = true;              // nie powtarzaj tej samej platformy
     public GateController2D gate;                 // opcjonalnie: bramka/ściana do otwierania
 
