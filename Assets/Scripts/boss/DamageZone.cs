@@ -83,7 +83,7 @@ public class DamageZone2D : MonoBehaviour
                     // od centrum strefy do gracza
                     dir = ((Vector2)rb.worldCenterOfMass - (Vector2)transform.position).normalized;
                 }
-                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y); // nie zerujemy
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y); // nie zerujemy
                 rb.AddForce(dir.normalized * knockbackForce, ForceMode2D.Impulse);
             }
         }

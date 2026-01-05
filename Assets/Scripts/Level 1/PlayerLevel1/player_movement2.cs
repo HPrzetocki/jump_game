@@ -85,7 +85,7 @@ public class PlayerController2 : MonoBehaviour
     {
         if (isCrouching)
         {
-            rb.velocity = new Vector2(0, rb.velocity.y);
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
             return;
         }
 
@@ -94,12 +94,12 @@ public class PlayerController2 : MonoBehaviour
             if (preJump)
             {
                 // Zatrzymaj ruch poziomy podczas ładowania skoku
-                rb.velocity = new Vector2(0, rb.velocity.y);
+                rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
                 playerMovmentState.SetMoveState(PlayerMovmentState.MoveState.Crouch);
             }
             else
             {
-                rb.velocity = new Vector2(speed * gI.valueX, rb.velocity.y);
+                rb.linearVelocity = new Vector2(speed * gI.valueX, rb.linearVelocity.y);
             }
         }
     }
@@ -150,7 +150,7 @@ public class PlayerController2 : MonoBehaviour
         // Podwójny skok w powietrzu
 
 
-        if (rb.velocity.y <= -1)
+        if (rb.linearVelocity.y <= -1)
         {
             rb.sharedMaterial = normalMat;
         }
@@ -168,7 +168,7 @@ public class PlayerController2 : MonoBehaviour
         float tempX = horizontalInput * speed * horizontalJumpBoost;
         float tempY = jumpForce * verticalJumpScale;
 
-        rb.velocity = new Vector2(tempX, tempY);
+        rb.linearVelocity = new Vector2(tempX, tempY);
 
         jumpCount++;
         preJump = false;
@@ -335,14 +335,14 @@ public class PlayerController2 : MonoBehaviour
             {
                 { "position_x", transform.position.x },
                 { "position_y", transform.position.y },
-                { "landing_velocity_y", rb.velocity.y }
+                { "landing_velocity_y", rb.linearVelocity.y }
             };
 
             AnalyticsService.Instance.RecordEvent(landEvent);
 
             Debug.Log(
                 $"[Analytics] Sent player_land | pos=({transform.position.x}, {transform.position.y}), " +
-                $"velY={rb.velocity.y}"
+                $"velY={rb.linearVelocity.y}"
             );
         }
         catch (System.Exception e)

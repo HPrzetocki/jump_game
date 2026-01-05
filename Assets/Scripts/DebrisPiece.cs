@@ -22,7 +22,7 @@ public class DebrisPiece : MonoBehaviour
         t0 = Time.time;
         spawned = true;
 
-        rb.velocity = new Vector2(xDrift, 0f);
+        rb.linearVelocity = new Vector2(xDrift, 0f);
         rb.angularVelocity = Random.Range(-180f, 180f);
     }
 

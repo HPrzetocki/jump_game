@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Enemy
   - Ground
+  - Trap
   layers:
   - Default
   - TransparentFX
@@ -42,6 +43,12 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: UI
+    uniqueID: 3659261927
+    locked: 0
+  - name: Ui_Overlay
+    uniqueID: 2392906587
     locked: 0
   m_RenderingLayers:
   - Default

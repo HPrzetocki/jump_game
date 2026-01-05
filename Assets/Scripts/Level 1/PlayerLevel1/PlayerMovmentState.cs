@@ -37,13 +37,13 @@ public class PlayerMovmentState : MonoBehaviour
         {
             SetMoveState(MoveState.Crouch);
         }
-        // Jeœli stoi w miejscu i nie skacze
-        else if (Mathf.Abs(rigidBody.velocity.x) < 0.1f && rigidBody.velocity.y == 0)
+        // Jeï¿½li stoi w miejscu i nie skacze
+        else if (Mathf.Abs(rigidBody.linearVelocity.x) < 0.1f && rigidBody.linearVelocity.y == 0)
         {
             SetMoveState(MoveState.Idle);
         }
-        // Jeœli chodzi w lewo/prawo i nie skacze
-        else if (Mathf.Abs(rigidBody.velocity.x) >= 0.1f && rigidBody.velocity.y == 0)
+        // Jeï¿½li chodzi w lewo/prawo i nie skacze
+        else if (Mathf.Abs(rigidBody.linearVelocity.x) >= 0.1f && rigidBody.linearVelocity.y == 0)
         {
             SetMoveState(MoveState.Walk);
         }

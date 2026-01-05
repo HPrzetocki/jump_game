@@ -134,7 +134,7 @@ void FixedUpdate()
     public void ZatrzymajIUtrzymaj()
     {
         jestZatrzymana = true;
-        if (rb) rb.velocity = Vector2.zero;
+        if (rb) rb.linearVelocity = Vector2.zero;
     }
 
     void OnBecameInvisible()

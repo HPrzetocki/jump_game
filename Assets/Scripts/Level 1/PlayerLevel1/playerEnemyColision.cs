@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 
 public class PlayerTeleportOnCollision : MonoBehaviour
 {
@@ -18,4 +18,4 @@ public class PlayerTeleportOnCollision : MonoBehaviour
         // Teleportacja gracza na domyœln¹ pozycjê
         transform.position = defaultPosition;
     }
-}
+}*/

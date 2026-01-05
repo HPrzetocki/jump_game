@@ -28,7 +28,7 @@ public class PlayerFootsteps2D : MonoBehaviour
         if (rb == null) return;
 
         // ruch poziomy (X) – w 2D na ogół tylko to
-        bool isMoving = Mathf.Abs(rb.velocity.x) > minSpeed;
+        bool isMoving = Mathf.Abs(rb.linearVelocity.x) > minSpeed;
 
         bool isGrounded = false;
 
