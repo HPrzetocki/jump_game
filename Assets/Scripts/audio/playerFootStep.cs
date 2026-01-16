@@ -27,7 +27,7 @@ public class PlayerFootsteps2D : MonoBehaviour
     {
         if (rb == null) return;
 
-        // ruch poziomy (X) – w 2D na ogół tylko to
+        // ruch poziomy
         bool isMoving = Mathf.Abs(rb.linearVelocity.x) > minSpeed;
 
         bool isGrounded = false;
@@ -36,7 +36,7 @@ public class PlayerFootsteps2D : MonoBehaviour
         {
             isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundMask);
 
-            // debug – w Scene widać kółko
+            // debug
             Debug.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * groundCheckRadius, isGrounded ? Color.green : Color.red);
         }
         else
@@ -76,12 +76,12 @@ public class PlayerFootsteps2D : MonoBehaviour
 
         AudioClip clip = footstepClips[Random.Range(0, footstepClips.Length)];
 
-        Debug.Log("FOOTSTEP: " + clip.name); // zobaczysz w konsoli kiedy gra krok
+        Debug.Log("FOOTSTEP: " + clip.name); 
 
         SoundFXManager.instance.PlaySoundFXClip(clip, transform, 1f);
     }
 
-    // żeby w edytorze było widać zasięg sprawdzania ziemi
+    
     private void OnDrawGizmosSelected()
     {
         if (groundCheck == null) return;

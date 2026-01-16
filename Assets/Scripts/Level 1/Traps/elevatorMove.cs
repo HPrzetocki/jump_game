@@ -19,7 +19,7 @@ public class Elevator : MonoBehaviour
         Vector3 destination = movingUp ? targetPos : startPos;
         transform.position = Vector3.MoveTowards(transform.position, destination, speed * Time.deltaTime);
 
-        // Po dotarciu do celu — zmieñ kierunek
+      
         if (Vector3.Distance(transform.position, destination) < 0.01f)
         {
             movingUp = !movingUp;

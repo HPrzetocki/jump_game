@@ -21,10 +21,9 @@ public class JumpChargeUI : MonoBehaviour
             return;
         }
 
-        // ZMIANA 1: Na starcie upewniamy siê, ¿e pasek JEST W£¥CZONY
         chargeSlider.gameObject.SetActive(true);
 
-        // Zerujemy go i ustawiamy pocz¹tkowy kolor
+        // Zerujemy i ustawiamy pocz¹tkowy kolor
         UpdateVisuals(0f);
     }
 
@@ -40,7 +39,7 @@ public class JumpChargeUI : MonoBehaviour
             float currentForce = playerController.jumpForce;
             progress = Mathf.Clamp01(currentForce / maxJumpForce);
         }
-        // ZMIANA 2: Jeœli NIE ³aduje, progress po prostu zostaje 0 (nie wy³¹czamy obiektu)
+        
 
         UpdateVisuals(progress);
     }
@@ -50,7 +49,7 @@ public class JumpChargeUI : MonoBehaviour
         // Ustaw wartoœæ suwaka
         chargeSlider.value = progress;
 
-        // Ustaw kolor (dla 0 bêdzie to pocz¹tek gradientu, np. zielony)
+        // Ustaw kolor
         if (fillImage != null)
         {
             fillImage.color = chargeGradient.Evaluate(progress);
