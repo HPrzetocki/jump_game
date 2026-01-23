@@ -72216,7 +72216,11 @@ PrefabInstance:
     - target: {fileID: 8536867443637235132, guid: 7945a49f22c5143f388f744c9d70d540, type: 3}
       propertyPath: jumpSound
       value: 
-      objectReference: {fileID: 8300000, guid: 205be67afd3eb43a18e9e78c60a271f1, type: 3}
+      objectReference: {fileID: 8300000, guid: 4dd3709bc57e142658a6b53f15346ce6, type: 3}
+    - target: {fileID: 8536867443637235132, guid: 7945a49f22c5143f388f744c9d70d540, type: 3}
+      propertyPath: jumpChargeSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 3fc26869a512b4e5187c9be6310ad8c2, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

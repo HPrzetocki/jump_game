@@ -12,6 +12,9 @@ public class PlayerController2 : MonoBehaviour
     [SerializeField] private PlayerMovmentState playerMovmentState;
     [SerializeField] private Animator animator;
     [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip jumpChargeSound;      // dźwięk ładowania
+[SerializeField] private AudioSource jumpChargeSource;   // źródło dźwięku ładowania
+
     public float speed;
     public float jumpForce;
 
@@ -48,14 +51,55 @@ public class PlayerController2 : MonoBehaviour
     private bool IsAnalyticsReady =>
         UnityServices.State == ServicesInitializationState.Initialized;
 
-    void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        gI = GetComponent<GatherInput>();
-        originalScale = transform.localScale;
+void Start()
+{
+    rb = GetComponent<Rigidbody2D>();
+    gI = GetComponent<GatherInput>();
+    originalScale = transform.localScale;
 
-        Debug.Log("[Player] PlayerController2 Start");
+    // Audio ładowania skoku
+    if (jumpChargeSource == null)
+    {
+        jumpChargeSource = gameObject.AddComponent<AudioSource>();
     }
+
+    jumpChargeSource.playOnAwake = false;
+    jumpChargeSource.loop = true;
+    jumpChargeSource.spatialBlend = 0f; // 2D
+
+    Debug.Log("[Player] PlayerController2 Start");
+}
+
+private void StartJumpChargeSound()
+{
+    if (jumpChargeSource == null || jumpChargeSound == null) return;
+    if (jumpChargeSource.isPlaying) return;
+
+    jumpChargeSource.clip = jumpChargeSound;
+    jumpChargeSource.loop = true;
+    jumpChargeSource.volume = 0.1f;
+    jumpChargeSource.pitch = 1f;
+    jumpChargeSource.Play();
+}
+
+private void UpdateJumpChargeSound()
+{
+    if (jumpChargeSource == null || !jumpChargeSource.isPlaying) return;
+
+    // 0–1 w zależności od naładowania skoku
+    float t = Mathf.Clamp01(jumpForce / maxJumpForce);
+    jumpChargeSource.pitch = Mathf.Lerp(1f, 1.6f, t);
+}
+
+private void StopJumpChargeSound()
+{
+    if (jumpChargeSource == null) return;
+    if (jumpChargeSource.isPlaying)
+        jumpChargeSource.Stop();
+}
+
+
+
 
     private void FixedUpdate()
     {
@@ -118,46 +162,65 @@ public class PlayerController2 : MonoBehaviour
         }
     }
 
-    private void PlayerJump()
+private void PlayerJump()
+{
+    // ŁADOWANIE SKOKU Z ZIEMI
+    if (gI.jumpInput && grounded)
     {
-        // Ładowany skok z ziemi
-        if (gI.jumpInput && grounded)
+        if (!preJump)
         {
-            if (!preJump)
-            {
-                Debug.Log("[Player] Zaczynam ładować skok z ziemi");
-            }
-
+            Debug.Log("[Player] Zaczynam ładować skok z ziemi");
             preJump = true;
-            rb.sharedMaterial = bounceMat;
-
-            jumpForce += 2.5f;
-            if (jumpForce >= maxJumpForce)
-            {
-                jumpForce = maxJumpForce;
-                Debug.Log("[Player] Osiągnięto maxJumpForce, wykonuję skok z ziemi");
-                PerformJump(false); // skok z ziemi
-            }
+            StartJumpChargeSound();      // <<< start dźwięku ładowania
         }
 
-        // Zakończenie ładowania i wykonanie skoku
-        if (!gI.jumpInput && preJump && grounded && jumpForce > 0f)
+        rb.sharedMaterial = bounceMat;
+
+        jumpForce += 2.5f;
+        if (jumpForce >= maxJumpForce)
         {
-            Debug.Log("[Player] Zwolniono przycisk skoku, wykonuję skok z ziemi");
-            PerformJump(false); // skok z ziemi
+            jumpForce = maxJumpForce;
+            Debug.Log("[Player] Osiągnięto maxJumpForce, wykonuję skok z ziemi");
+
+            StopJumpChargeSound();       // <<< koniec ładowania
+            PerformJump(false);          // skok z ziemi
         }
-
-        // Podwójny skok w powietrzu
-
-
-        if (rb.linearVelocity.y <= -1)
+        else
         {
-            rb.sharedMaterial = normalMat;
+            // aktualizuj pitch podczas ładowania
+            UpdateJumpChargeSound();
+        }
+    }
+    else
+    {
+        // Jeżeli przestałeś spełniać warunek (np. wyskoczyłeś, puściłeś klawisz)
+        // a wciąż jesteś w preJump – upewnij się, że audio nie gra
+        if (preJump && (!grounded || !gI.jumpInput))
+        {
+            StopJumpChargeSound();
         }
     }
 
+    // ZWOLNIENIE PRZYCISKU – SKOK
+    if (!gI.jumpInput && preJump && grounded && jumpForce > 0f)
+    {
+        Debug.Log("[Player] Zwolniono przycisk skoku, wykonuję skok z ziemi");
+        StopJumpChargeSound();           // <<< zatrzymaj ładowanie
+        PerformJump(false);
+    }
+
+    // Materiał przy spadaniu
+    if (rb.linearVelocity.y <= -1)
+    {
+        rb.sharedMaterial = normalMat;
+    }
+}
+
+
+
     private void PerformJump(bool isAirJump)
     {
+         StopJumpChargeSound(); // bezpieczeństwo
         float horizontalInput = gI.valueX;
 
         if (Mathf.Abs(horizontalInput) < 0.1f)
@@ -251,6 +314,7 @@ public class PlayerController2 : MonoBehaviour
         jumpForce = 0f;
         preJump = false;
         jumpCount = 0;
+            StopJumpChargeSound(); // gdyby gracz zginął w trakcie ładowania
     }
 
     // ==========================
