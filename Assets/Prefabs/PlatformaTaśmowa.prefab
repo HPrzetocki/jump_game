@@ -170,7 +170,7 @@ GameObject:
   - component: {fileID: -7591489998647948371}
   - component: {fileID: 5631308641996173690}
   m_Layer: 12
-  m_Name: "PlatformaTas\u0301mowa"
+  m_Name: "PlatformaTa\u015Bmowa"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
